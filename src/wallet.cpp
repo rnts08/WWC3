@@ -4,6 +4,7 @@
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
 #include "wallet.h"
+#include "init.h"
 
 #include "base58.h"
 #include "coincontrol.h"
@@ -302,7 +303,8 @@ bool CWallet::EncryptWallet(const SecureString& strWalletPassphrase)
         {
             if (fFileBacked)
                 pwalletdbEncryption->TxnAbort();
-            exit(1); //We now probably have half of our keys encrypted in memory, and half not...die and let the user reload their unencrypted wallet.
+            StartShutdown();
+            return false;
         }
 
         // Encryption was introduced in version 0.4.0
@@ -311,7 +313,8 @@ bool CWallet::EncryptWallet(const SecureString& strWalletPassphrase)
         if (fFileBacked)
         {
             if (!pwalletdbEncryption->TxnCommit())
-                exit(1); //We now have keys encrypted in memory, but no on disk...die to avoid confusion and let the user reload their unencrypted wallet.
+                StartShutdown();
+                return false;
 
             delete pwalletdbEncryption;
             pwalletdbEncryption = NULL;
