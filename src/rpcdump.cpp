@@ -13,6 +13,8 @@
 #include <boost/date_time/posix_time/posix_time.hpp>
 #include <boost/variant/get.hpp>
 #include <boost/algorithm/string.hpp>
+#include <boost/filesystem.hpp>
+#include "util.h"
 
 using namespace json_spirit;
 using namespace std;
@@ -157,6 +159,22 @@ Value importprivkey(const Array& params, bool fHelp)
     return Value::null;
 }
 
+static bool IsSafeWalletPath(const std::string& strPath)
+{
+    boost::system::error_code ec;
+    boost::filesystem::path p(strPath);
+    if (p.is_absolute())
+        return false;
+    boost::filesystem::path resolved = boost::filesystem::absolute(p, GetDataDir());
+    boost::filesystem::path parent = resolved.parent_path();
+    parent = boost::filesystem::canonical(parent, ec);
+    if (ec)
+        return false;
+    std::string parentStr = parent.string();
+    std::string datadirStr = GetDataDir().string();
+    return parentStr.compare(0, datadirStr.size(), datadirStr) == 0;
+}
+
 Value importwallet(const Array& params, bool fHelp)
 {
     if (fHelp || params.size() != 1)
@@ -166,8 +184,11 @@ Value importwallet(const Array& params, bool fHelp)
 
     EnsureWalletIsUnlocked();
 
+    std::string strFile = params[0].get_str();
+    if (!IsSafeWalletPath(strFile))
+        throw JSONRPCError(RPC_INVALID_PARAMETER, "Invalid wallet dump file path");
     ifstream file;
-    file.open(params[0].get_str().c_str());
+    file.open(strFile.c_str());
     if (!file.is_open())
         throw JSONRPCError(RPC_INVALID_PARAMETER, "Cannot open wallet dump file");
 
@@ -274,8 +295,11 @@ Value dumpwallet(const Array& params, bool fHelp)
 
     EnsureWalletIsUnlocked();
 
+    std::string strFile = params[0].get_str();
+    if (!IsSafeWalletPath(strFile))
+        throw JSONRPCError(RPC_INVALID_PARAMETER, "Invalid wallet dump file path");
     ofstream file;
-    file.open(params[0].get_str().c_str());
+    file.open(strFile.c_str());
     if (!file.is_open())
         throw JSONRPCError(RPC_INVALID_PARAMETER, "Cannot open wallet dump file");
 
