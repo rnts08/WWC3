@@ -32,20 +32,20 @@ void dumpKeyInfo(uint256 privkey)
     vector<unsigned char> sec;
     sec.resize(32);
     memcpy(&sec[0], &secret[0], 32);
-    printf("  * secret (hex): %s\n", HexStr(sec).c_str());
+    BOOST_MESSAGE(strprintf("  * secret (hex): %s", HexStr(sec)));
 
     for (int nCompressed=0; nCompressed<2; nCompressed++)
     {
         bool fCompressed = nCompressed == 1;
-        printf("  * %s:\n", fCompressed ? "compressed" : "uncompressed");
+        BOOST_MESSAGE(strprintf("  * %s:", fCompressed ? "compressed" : "uncompressed"));
         CDiminutiveCoinSecret bsecret;
         bsecret.SetSecret(secret, fCompressed);
-        printf("    * secret (base58): %s\n", bsecret.ToString().c_str());
+        BOOST_MESSAGE(strprintf("    * secret (base58): %s", bsecret.ToString()));
         CKey key;
         key.SetSecret(secret, fCompressed);
         vector<unsigned char> vchPubKey = key.GetPubKey();
-        printf("    * pubkey (hex): %s\n", HexStr(vchPubKey).c_str());
-        printf("    * address (base58): %s\n", CDiminutiveCoinAddress(vchPubKey).ToString().c_str());
+        BOOST_MESSAGE(strprintf("    * pubkey (hex): %s", HexStr(vchPubKey)));
+        BOOST_MESSAGE(strprintf("    * address (base58): %s", CDiminutiveCoinAddress(vchPubKey).ToString()));
     }
 }
 #endif
