@@ -1,0 +1,54 @@
+# Waya Wolf Coin - Qt GUI Build (Static Linking)
+# ===============================================
+# Base: Ubuntu 16.04 (required for OpenSSL 1.0 compatibility)
+# This builds both wayawolfcoind and Wayawolfcoin-qt with STATIC library linking
+# Most dependencies (OpenSSL, Boost, BDB, miniupnpc, zlib) are linked statically
+# Only glibc, pthread, Qt5, and X11 remain dynamic (standard for Linux)
+# Outputs: /build/src/wayawolfcoind, /build/Wayawolfcoin-qt
+#
+# Build command: docker build -f Dockerfile.qt-static -t ww-qt-static .
+# Extract binaries:
+# docker run --rm ww-qt-static cat /build/src/wayawolfcoind > wayawolfcoind
+# docker run --rm ww-qt-static cat /build/Wayawolfcoin-qt > Wayawolfcoin-qt
+
+FROM ubuntu:16.04
+
+ENV DEBIAN_FRONTEND=noninteractive
+
+# Install build dependencies including Qt5 development packages
+RUN apt-get update && apt-get install -y \
+    build-essential \
+    libssl-dev \
+    libdb++-dev \
+    libboost-all-dev \
+    libqrencode-dev \
+    libminiupnpc-dev \
+    qt5-default \
+    qtbase5-dev \
+    qtbase5-dev-tools \
+    qttools5-dev-tools \
+    libqt5opengl5-dev \
+    git \
+    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/*
+
+WORKDIR /build
+
+# Copy source code
+COPY . .
+
+# Fix .pro file: wrap Windows-only paths in win32 condition to avoid Linux build errors
+# The original .pro file had Windows paths that get interpreted incorrectly on Linux
+RUN sed -i 's/^# Windows begin/win32 {\n# Windows begin/; s/^# Windows end/# Windows end\n}/' wayawolfcoin.pro || true
+
+# Create required directory for crypto object files
+RUN mkdir -p src/obj/crypto
+
+# Clean pre-built leveldb objects (compiled for host GCC, may lack std::__throw_bad_array_new_length in Ubuntu 16.04's libstdc++)
+RUN cd src/leveldb && make clean 2>/dev/null; rm -f libleveldb.a libmemenv.a
+
+# Build the daemon with STATIC=1 (static OpenSSL, Boost, BDB, miniupnpc)
+RUN cd src && make -f makefile.unix USE_UPNP=1 STATIC=1
+
+# Build Qt GUI using qmake with RELEASE=1 (enables static linking in .pro)
+RUN qmake "RELEASE=1" wayawolfcoin.pro && make
