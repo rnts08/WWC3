@@ -169,7 +169,6 @@ int main(int argc, char *argv[])
     // Application identification (must be set before OptionsModel is initialized,
     // as it is used to locate QSettings)
     app.setOrganizationName("Wayawolfcoin");
-    //XXX app.setOrganizationDomain("");
     if(GetBoolArg("-testnet", false)) // Separate UI settings for testnet
         app.setApplicationName("Wayawolfcoin-Qt-testnet");
     else
