@@ -301,7 +301,7 @@ public:
     {
         char psz[sizeof(pn)*2 + 1];
         for (unsigned int i = 0; i < sizeof(pn); i++)
-            sprintf(psz + i*2, "%02x", ((unsigned char*)pn)[sizeof(pn) - i - 1]);
+            sprintf(psz + i*2, "%02x", (reinterpret_cast<unsigned char*>(pn))[sizeof(pn) - i - 1]);
         return std::string(psz, psz + sizeof(pn)*2);
     }
 
@@ -324,7 +324,7 @@ public:
         while (phexdigit[(unsigned char)*psz] || *psz == '0')
             psz++;
         psz--;
-        unsigned char* p1 = (unsigned char*)pn;
+        unsigned char* p1 = reinterpret_cast<unsigned char*>(pn);
         unsigned char* pend = p1 + WIDTH * 4;
         while (psz >= pbegin && p1 < pend)
         {
@@ -349,22 +349,22 @@ public:
 
     unsigned char* begin()
     {
-        return (unsigned char*)&pn[0];
+        return reinterpret_cast<unsigned char*>(&pn[0]);
     }
 
     unsigned char* end()
     {
-        return (unsigned char*)&pn[WIDTH];
+        return reinterpret_cast<unsigned char*>(&pn[WIDTH]);
     }
 
     const unsigned char* begin() const
     {
-        return (unsigned char*)&pn[0];
+        return reinterpret_cast<const unsigned char*>(&pn[0]);
     }
 
     const unsigned char* end() const
     {
-        return (unsigned char*)&pn[WIDTH];
+        return reinterpret_cast<const unsigned char*>(&pn[WIDTH]);
     }
 
     unsigned int size() const

@@ -385,14 +385,14 @@ public:
     CScript& operator<<(const uint160& b)
     {
         insert(end(), sizeof(b));
-        insert(end(), (unsigned char*)&b, (unsigned char*)&b + sizeof(b));
+        insert(end(), reinterpret_cast<const unsigned char*>(&b), reinterpret_cast<const unsigned char*>(&b) + sizeof(b));
         return *this;
     }
 
     CScript& operator<<(const uint256& b)
     {
         insert(end(), sizeof(b));
-        insert(end(), (unsigned char*)&b, (unsigned char*)&b + sizeof(b));
+        insert(end(), reinterpret_cast<const unsigned char*>(&b), reinterpret_cast<const unsigned char*>(&b) + sizeof(b));
         return *this;
     }
 
@@ -425,13 +425,13 @@ public:
         {
             insert(end(), OP_PUSHDATA2);
             unsigned short nSize = b.size();
-            insert(end(), (unsigned char*)&nSize, (unsigned char*)&nSize + sizeof(nSize));
+            insert(end(), reinterpret_cast<const unsigned char*>(&nSize), reinterpret_cast<const unsigned char*>(&nSize) + sizeof(nSize));
         }
         else
         {
             insert(end(), OP_PUSHDATA4);
             unsigned int nSize = b.size();
-            insert(end(), (unsigned char*)&nSize, (unsigned char*)&nSize + sizeof(nSize));
+            insert(end(), reinterpret_cast<const unsigned char*>(&nSize), reinterpret_cast<const unsigned char*>(&nSize) + sizeof(nSize));
         }
         insert(end(), b.begin(), b.end());
         return *this;

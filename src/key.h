@@ -68,7 +68,7 @@ public:
     void Set(const T pbegin, const T pend) {
         int len = pend == pbegin ? 0 : GetLen(pbegin[0]);
         if (len && len == (pend-pbegin))
-            memcpy(vch, (unsigned char*)&pbegin[0], len);
+            memcpy(vch, &pbegin[0], len);
         else
             Invalidate();
     }
@@ -219,7 +219,7 @@ public:
             return;
         }
         if (Check(&pbegin[0])) {
-            memcpy(vch, (unsigned char*)&pbegin[0], 32);
+            memcpy(vch, &pbegin[0], 32);
             fValid = true;
             fCompressed = fCompressedIn;
         } else {

@@ -208,7 +208,7 @@ public:
 
     bool Sign(const uint256 &hash, std::vector<unsigned char>& vchSig) {
         vchSig.clear();
-        ECDSA_SIG *sig = ECDSA_do_sign((unsigned char*)&hash, sizeof(hash), pkey);
+        ECDSA_SIG *sig = ECDSA_do_sign(reinterpret_cast<const unsigned char*>(&hash), sizeof(hash), pkey);
         if (sig == NULL)
             return false;
         BN_CTX *ctx = BN_CTX_new();
@@ -235,14 +235,14 @@ public:
 
     bool Verify(const uint256 &hash, const std::vector<unsigned char>& vchSig) {
         // -1 = error, 0 = bad sig, 1 = good
-        if (ECDSA_verify(0, (unsigned char*)&hash, sizeof(hash), &vchSig[0], vchSig.size(), pkey) != 1)
+        if (ECDSA_verify(0, reinterpret_cast<const unsigned char*>(&hash), sizeof(hash), &vchSig[0], vchSig.size(), pkey) != 1)
             return false;
         return true;
     }
 
     bool SignCompact(const uint256 &hash, unsigned char *p64, int &rec) {
         bool fOk = false;
-        ECDSA_SIG *sig = ECDSA_do_sign((unsigned char*)&hash, sizeof(hash), pkey);
+        ECDSA_SIG *sig = ECDSA_do_sign(reinterpret_cast<const unsigned char*>(&hash), sizeof(hash), pkey);
         if (sig==NULL)
             return false;
         memset(p64, 0, 64);
@@ -253,7 +253,7 @@ public:
             GetPubKey(pubkey, true);
             for (int i=0; i<4; i++) {
                 CECKey keyRec;
-                if (ECDSA_SIG_recover_key_GFp(keyRec.pkey, sig, (unsigned char*)&hash, sizeof(hash), i, 1) == 1) {
+                if (ECDSA_SIG_recover_key_GFp(keyRec.pkey, sig, reinterpret_cast<const unsigned char*>(&hash), sizeof(hash), i, 1) == 1) {
                     CPubKey pubkeyRec;
                     keyRec.GetPubKey(pubkeyRec, true);
                     if (pubkeyRec == pubkey) {
@@ -282,7 +282,7 @@ public:
         ECDSA_SIG *sig = ECDSA_SIG_new();
         BN_bin2bn(&p64[0],  32, sig->r);
         BN_bin2bn(&p64[32], 32, sig->s);
-        bool ret = ECDSA_SIG_recover_key_GFp(pkey, sig, (unsigned char*)&hash, sizeof(hash), rec, 0) == 1;
+        bool ret = ECDSA_SIG_recover_key_GFp(pkey, sig, reinterpret_cast<const unsigned char*>(&hash), sizeof(hash), rec, 0) == 1;
         ECDSA_SIG_free(sig);
         return ret;
     }
@@ -609,7 +609,7 @@ bool CKey::Derive(CKey& keyChild, unsigned char ccChild[32], unsigned int nChild
         BIP32Hash(cc, nChild, 0, begin(), out);
     }
     memcpy(ccChild, out+32, 32);
-    bool ret = CECKey::TweakSecret((unsigned char*)keyChild.begin(), begin(), out);
+    bool ret = CECKey::TweakSecret(const_cast<unsigned char*>(keyChild.begin()), begin(), out);
     UnlockObject(out);
     keyChild.fCompressed = true;
     keyChild.fValid = ret;

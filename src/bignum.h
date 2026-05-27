@@ -230,7 +230,7 @@ public:
             return 0;
         uint64_t n = 0;
         for (unsigned int i = 0, j = vch.size()-1; i < sizeof(n) && j >= 4; i++, j--)
-            ((unsigned char*)&n)[i] = vch[j];
+            (reinterpret_cast<unsigned char*>(&n))[i] = vch[j];
         return n;
     }
 
@@ -266,7 +266,7 @@ public:
         unsigned char pch[sizeof(n) + 6];
         unsigned char* p = pch + 4;
         bool fLeadingZeroes = true;
-        unsigned char* pbegin = (unsigned char*)&n;
+        unsigned char* pbegin = reinterpret_cast<unsigned char*>(&n);
         unsigned char* psrc = pbegin + sizeof(n);
         while (psrc != pbegin)
         {
@@ -302,7 +302,7 @@ public:
             return 0;
         uint256 n = 0;
         for (unsigned int i = 0, j = vch.size()-1; i < sizeof(n) && j >= 4; i++, j--)
-            ((unsigned char*)&n)[i] = vch[j];
+            (reinterpret_cast<unsigned char*>(&n))[i] = vch[j];
         return n;
     }
 
