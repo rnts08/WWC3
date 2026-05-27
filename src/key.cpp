@@ -6,6 +6,7 @@
 #include <openssl/ecdsa.h>
 #include <openssl/rand.h>
 #include <openssl/obj_mac.h>
+#include <stdexcept>
 
 #include "key.h"
 
@@ -132,7 +133,8 @@ private:
 public:
     CECKey() {
         pkey = EC_KEY_new_by_curve_name(NID_secp256k1);
-        assert(pkey != NULL);
+        if (pkey == NULL)
+            throw std::runtime_error("CECKey: failed to create EC_KEY");
     }
 
     ~CECKey() {
@@ -141,10 +143,12 @@ public:
 
     void GetSecretBytes(unsigned char vch[32]) const {
         const BIGNUM *bn = EC_KEY_get0_private_key(pkey);
-        assert(bn);
+        if (bn == NULL)
+            throw std::runtime_error("CECKey::GetSecretBytes: no private key");
         int nBytes = BN_num_bytes(bn);
         int n=BN_bn2bin(bn,&vch[32 - nBytes]);
-        assert(n == nBytes);
+        if (n != nBytes)
+            throw std::runtime_error("CECKey::GetSecretBytes: BN_bn2bin size mismatch");
         memset(vch, 0, 32 - nBytes);
     }
 
@@ -153,9 +157,11 @@ public:
         BIGNUM bn;
         BN_init(&bn);
         ret = BN_bin2bn(vch, 32, &bn);
-        assert(ret);
+        if (!ret)
+            throw std::runtime_error("CECKey::SetSecretBytes: BN_bin2bn failed");
         ret = EC_KEY_regenerate_key(pkey, &bn);
-        assert(ret);
+        if (!ret)
+            throw std::runtime_error("CECKey::SetSecretBytes: EC_KEY_regenerate_key failed");
         BN_clear_free(&bn);
     }
 
