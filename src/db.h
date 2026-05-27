@@ -42,6 +42,7 @@ private:
 public:
     mutable CCriticalSection cs_db;
     DbEnv dbenv;
+    FILE* fileError;
     std::map<std::string, int> mapFileUseCount;
     std::map<std::string, Db*> mapDb;
 

@@ -47,15 +47,21 @@ void CDBEnv::EnvShutdown()
         DbEnv((u_int32_t)0).remove(strPath.c_str(), 0);
 }
 
+CDBEnv::~CDBEnv()
+{
+    EnvShutdown();
+    if (fileError)
+    {
+        fclose(fileError);
+        fileError = NULL;
+    }
+}
+
 CDBEnv::CDBEnv() : dbenv(DB_CXX_NO_EXCEPTIONS)
 {
     fDbEnvInit = false;
     fMockDb = false;
-}
-
-CDBEnv::~CDBEnv()
-{
-    EnvShutdown();
+    fileError = NULL;
 }
 
 void CDBEnv::Close()
@@ -89,7 +95,10 @@ bool CDBEnv::Open(boost::filesystem::path pathEnv_)
     dbenv.set_lg_max(10485760);
     dbenv.set_lk_max_locks(10000);
     dbenv.set_lk_max_objects(10000);
-    dbenv.set_errfile(fopen(pathErrorFile.string().c_str(), "a")); /// debug
+    if (fileError)
+        fclose(fileError);
+    fileError = fopen(pathErrorFile.string().c_str(), "a");
+    dbenv.set_errfile(fileError); /// debug
     dbenv.set_flags(DB_AUTO_COMMIT, 1);
     dbenv.set_flags(DB_TXN_WRITE_NOSYNC, 1);
 #ifdef DB_LOG_AUTO_REMOVE
