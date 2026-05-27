@@ -193,6 +193,8 @@ bool CCryptoKeyStore::Unlock(const CKeyingMaterial& vMasterKeyIn)
 
 bool CCryptoKeyStore::AddKeyPubKey(const CKey& key, const CPubKey &pubkey)
 {
+    // CAUTION: callers should hold cs_wallet before calling this method.
+    // Lock ordering must always be: cs_wallet -> cs_KeyStore (not the reverse).
     {
         LOCK(cs_KeyStore);
         if (!IsCrypted())
