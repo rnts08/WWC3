@@ -1750,9 +1750,9 @@ bool CAddrDB::Write(const CAddrMan& addr)
     // open temp output file, and associate with CAutoFile
     boost::filesystem::path pathTmp = GetDataDir() / tmpfn;
     FILE *file = fopen(pathTmp.string().c_str(), "wb");
-    CAutoFile fileout = CAutoFile(file, SER_DISK, CLIENT_VERSION);
-    if (!fileout)
+    if (!file)
         return error("CAddrman::Write() : open failed");
+    CAutoFile fileout = CAutoFile(file, SER_DISK, CLIENT_VERSION);
 
     // Write and commit header, data
     try {
@@ -1775,9 +1775,9 @@ bool CAddrDB::Read(CAddrMan& addr)
 {
     // open input file, and associate with CAutoFile
     FILE *file = fopen(pathAddr.string().c_str(), "rb");
-    CAutoFile filein = CAutoFile(file, SER_DISK, CLIENT_VERSION);
-    if (!filein)
+    if (!file)
         return error("CAddrman::Read() : open failed");
+    CAutoFile filein = CAutoFile(file, SER_DISK, CLIENT_VERSION);
 
     // use file size to size memory buffer
     int fileSize = boost::filesystem::file_size(pathAddr);

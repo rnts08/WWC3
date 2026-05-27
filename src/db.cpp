@@ -98,6 +98,8 @@ bool CDBEnv::Open(boost::filesystem::path pathEnv_)
     if (fileError)
         fclose(fileError);
     fileError = fopen(pathErrorFile.string().c_str(), "a");
+    if (!fileError)
+        LogPrintf("Failed to open db.log for writing\n");
     dbenv.set_errfile(fileError); /// debug
     dbenv.set_flags(DB_AUTO_COMMIT, 1);
     dbenv.set_flags(DB_TXN_WRITE_NOSYNC, 1);
