@@ -39,7 +39,7 @@ COPY . .
 
 # Fix .pro file: wrap Windows-only paths in win32 condition to avoid Linux build errors
 # The original .pro file had Windows paths that get interpreted incorrectly on Linux
-RUN sed -i 's/^# Windows begin/win32 {\n# Windows begin/; s/^# Windows end/# Windows end\n}/' wayawolfcoin.pro || true
+RUN sed -i 's/^#  Windows begin/win32 {\n#  Windows begin/; s/^#  Windows end/#  Windows end\n}/' wayawolfcoin.pro || true
 
 # Create required directory for crypto object files
 RUN mkdir -p src/obj/crypto
@@ -50,5 +50,13 @@ RUN cd src/leveldb && make clean 2>/dev/null; rm -f libleveldb.a libmemenv.a
 # Build the daemon with STATIC=1 (static OpenSSL, Boost, BDB, miniupnpc)
 RUN cd src && make -f makefile.unix USE_UPNP=1 STATIC=1
 
+# Qt 5.5 compatibility: define QT_CONFIG macro (missing from Qt 5.5 headers)
+RUN echo '#ifndef QT_CONFIG_MACRO_H' > /build/qt_config_fix.h && \
+    echo '#define QT_CONFIG_MACRO_H' >> /build/qt_config_fix.h && \
+    echo '#ifndef QT_CONFIG' >> /build/qt_config_fix.h && \
+    echo '#define QT_CONFIG(x) 1' >> /build/qt_config_fix.h && \
+    echo '#endif' >> /build/qt_config_fix.h && \
+    echo '#endif' >> /build/qt_config_fix.h
+
 # Build Qt GUI using qmake with RELEASE=1 (enables static linking in .pro)
-RUN qmake "RELEASE=1" wayawolfcoin.pro && make
+RUN qmake "RELEASE=1" "QMAKE_CXXFLAGS+=-include /build/qt_config_fix.h" wayawolfcoin.pro && make
