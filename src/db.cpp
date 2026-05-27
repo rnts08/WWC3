@@ -422,6 +422,10 @@ bool CDB::Rewrite(const string& strFile, const char* pszSkip)
                             fSuccess = false;
                         delete pdbCopy;
                     }
+                    else
+                    {
+                        delete pdbCopy;
+                    }
                 }
                 if (fSuccess)
                 {
