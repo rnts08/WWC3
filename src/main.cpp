@@ -2493,9 +2493,6 @@ void PrintBlockTree()
 	{
 		CBlockIndex* pindex = (*mi).second;
 		mapNext[pindex->pprev].push_back(pindex);
-		// test
-		//while (rand() % 3 == 0)
-		//    mapNext[pindex->pprev].push_back(pindex);
 	}
 
 	vector<pair<int, CBlockIndex*> > vStack;
@@ -3399,11 +3396,6 @@ bool ProcessMessages(CNode* pfrom)
 
 		// get next message
 		CNetMessage& msg = *it;
-
-		//if (fDebug)
-		//    LogPrintf("ProcessMessages(message %u msgsz, %zu bytes, complete:%s)\n",
-		//            msg.hdr.nMessageSize, msg.vRecv.size(),
-		//            msg.complete() ? "Y" : "N");
 
 		// end, if an incomplete message is found
 		if (!msg.complete())
