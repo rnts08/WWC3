@@ -1063,7 +1063,7 @@ public:
 class CDiskBlockIndex : public CBlockIndex
 {
 private:
-    uint256 blockHash;
+    mutable uint256 blockHash;
 
 public:
     uint256 hashPrev;
@@ -1131,7 +1131,7 @@ public:
         block.nBits           = nBits;
         block.nNonce          = nNonce;
 
-        const_cast<CDiskBlockIndex*>(this)->blockHash = block.GetHash();
+        blockHash = block.GetHash();
 
         return blockHash;
     }
