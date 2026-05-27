@@ -289,6 +289,8 @@ inline std::string StackString(const std::vector<std::vector<unsigned char> >& v
 
 
 /** Serialized script, used inside transaction inputs and outputs */
+// WARNING: std::vector has no virtual destructor. Deleting a CScript through a
+// std::vector<unsigned char>* pointer is undefined behavior. Never do that.
 class CScript : public std::vector<unsigned char>
 {
 protected:
